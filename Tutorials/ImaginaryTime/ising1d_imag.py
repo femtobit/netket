@@ -16,7 +16,7 @@
 from __future__ import print_function
 import json
 
-L = 12
+L = 20
 pars = {}
 
 # defining the lattice

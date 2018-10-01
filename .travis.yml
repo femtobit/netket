@@ -31,35 +31,35 @@ matrix:
   - os: linux
     compiler: gcc
     env:
-      - COMPILER=g++-5
+      - COMPILER="CC=gcc-5 && CXX=g++-5"
       - CMAKE_OPTIONS=-DUSE_LAPACK=ON
     addons:
       apt:
         sources: ['ubuntu-toolchain-r-test']
-        packages: ['g++-5','mpich','libmpich-dev', 'libboost-all-dev',
+        packages: ['g++-5','mpich','libmpich-dev', 'libboost-dev',
                    'liblapack3','libblas-dev', 'liblapack-dev','liblapacke-dev']
 
   - os: linux
     compiler: gcc
     env:
-      - COMPILER=g++-6
+      - COMPILER="CC=gcc-6 && CXX=g++-6"
       - CMAKE_OPTIONS=-DUSE_LAPACK=ON
     addons:
       apt:
         sources: ['ubuntu-toolchain-r-test']
-        packages: ['g++-6','mpich','libmpich-dev', 'libboost-all-dev','liblapack3',
+        packages: ['g++-6','mpich','libmpich-dev', 'liblapack3',
                    'libblas-dev', 'liblapack-dev','liblapacke-dev']
 
   - os: linux
     compiler: clang
     env:
-      - COMPILER=clang++-5.0
+      - COMPILER="CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS=-std=c++1z
       - CMAKE_OPTIONS=-DUSE_LAPACK=ON
     addons:
       apt:
         sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty-5.0']
-        packages: ['g++-6', 'clang-5.0', 'mpich','libmpich-dev', 'libboost-all-dev',
+        packages: ['g++-6', 'clang-5.0', 'mpich','libmpich-dev',
                    'liblapack3','libblas-dev', 'liblapack-dev','liblapacke-dev']
 
 
@@ -85,8 +85,11 @@ script:
        brew upgrade openmpi
        cmake --version
      fi
-  # make sure CXX is correctly set
-  - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
+  # make sure CC and CXX are correctly set
+  - if [[ "${COMPILER}" != "" ]]; then eval ${COMPILER}; fi
+
+  # Make build verbose
+  - export VERBOSE=1
 
   # show OS/compiler version
   - uname -a

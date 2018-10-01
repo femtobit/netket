@@ -49,7 +49,7 @@ foreach(_file ${TEST_SOURCES})
    string(REGEX REPLACE "unit-(.+)" "test-\\1" testcase ${_file_basename})
 
    add_executable(${testcase} $<TARGET_OBJECTS:catch_main> ${_file})
-   target_link_libraries(${testcase} PUBLIC netket_test)
+   target_link_libraries(${testcase} PUBLIC netket_test netket_lib)
    if(Boost_FOUND)
        target_include_directories(${testcase} SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
        target_compile_definitions(${testcase} PUBLIC WITH_BOOST_ODEINT)

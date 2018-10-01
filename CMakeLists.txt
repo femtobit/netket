@@ -128,7 +128,8 @@ target_link_libraries(netket_lib
 option(USE_LAPACK "Enable Lapack Support." OFF)
 if(USE_LAPACK)
     find_package(LAPACK REQUIRED)
-    target_link_libraries(netket_lib INTERFACE ${LAPACK_LIBRARIES})
+    find_package(LAPACKE) # On some systems, this seems to be needed in addition to LAPACK
+    target_link_libraries(netket_lib INTERFACE ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES})
     add_definitions(-DEIGEN_USE_BLAS -DEIGEN_USE_LAPACKE)
 endif()
 

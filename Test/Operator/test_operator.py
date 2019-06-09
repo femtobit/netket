@@ -133,7 +133,7 @@ def test_operator_is_hermitean():
 
 def test_no_segfault():
     g = nk.graph.Hypercube(8, 1)
-    hi = nk.hilbert.Spin(g, 1/2)
+    hi = nk.hilbert.Spin(g, 0.5)
 
     lo = nk.operator.LocalOperator(hi, [[1,0],[0,1]], [0])
     lo = lo.transpose()

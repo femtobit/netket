@@ -23,17 +23,17 @@
 
 namespace netket {
 
-MPSPeriodic::MPSPeriodic(const AbstractHilbert &hilbert, int bond_dim,
-                         bool diag, int symperiod)
-    : N_{hilbert.Size()},
-      d_{hilbert.LocalSize()},
+MPSPeriodic::MPSPeriodic(std::shared_ptr<const AbstractHilbert> hilbert,
+                         int bond_dim, bool diag, int symperiod)
+    : N_{hilbert->Size()},
+      d_{hilbert->LocalSize()},
       D_{bond_dim},
       symperiod_{symperiod},
       is_diag_{diag} {
   if (symperiod_ == -1) {
     symperiod_ = N_;
   }
-  SetHilbert(hilbert);
+  SetHilbert(std::move(hilbert));
   Init();
 }
 

@@ -74,27 +74,29 @@ class LocalOperator : public AbstractOperator {
   //   SetHilbert(rhs.GetHilbert());
   // }
 
-  explicit LocalOperator(const AbstractHilbert &hilbert, double constant = 0.)
+  explicit LocalOperator(std::shared_ptr<const AbstractHilbert> hilbert,
+                         double constant = 0.)
       : constant_(constant), nops_(0) {
-    SetHilbert(hilbert);
+    SetHilbert(std::move(hilbert));
   }
 
-  explicit LocalOperator(const AbstractHilbert &hilbert,
+  explicit LocalOperator(std::shared_ptr<const AbstractHilbert> hilbert,
                          const std::vector<MatType> &mat,
                          const std::vector<SiteType> &sites,
                          double constant = 0.)
       : constant_(constant) {
-    SetHilbert(hilbert);
+    SetHilbert(std::move(hilbert));
     for (std::size_t i = 0; i < mat.size(); i++) {
       Push(mat[i], sites[i]);
     }
     Init();
   }
 
-  explicit LocalOperator(const AbstractHilbert &hilbert, const MatType &mat,
-                         const SiteType &sites, double constant = 0.)
+  explicit LocalOperator(std::shared_ptr<const AbstractHilbert> hilbert,
+                         const MatType &mat, const SiteType &sites,
+                         double constant = 0.)
       : constant_(constant) {
-    SetHilbert(hilbert);
+    SetHilbert(std::move(hilbert));
     Push(mat, sites);
     // TODO sort sites and swap columns of mat accordingly
     Init();
@@ -275,7 +277,8 @@ class LocalOperator : public AbstractOperator {
     std::transform(mat_.begin(), mat_.end(), mat_t.begin(),
                    netket::transpose_vecvec<MelType>);
 
-    return LocalOperator(GetHilbert(), mat_t, sites_, constant_);
+    return LocalOperator(GetHilbert().shared_from_this(), mat_t, sites_,
+                         constant_);
   }
 
   LocalOperator Conjugate() const {
@@ -290,7 +293,8 @@ class LocalOperator : public AbstractOperator {
                      }
                      return out;
                    });
-    return LocalOperator(GetHilbert(), mat_c, sites_, constant_);
+    return LocalOperator(GetHilbert().shared_from_this(), mat_c, sites_,
+                         constant_);
   }
 
   // Product of two local operators, performing KroneckerProducts as necessary
@@ -318,7 +322,8 @@ class LocalOperator : public AbstractOperator {
       }
     }
     auto constant = lhs.constant_ * rhs.constant_;
-    auto opret = LocalOperator(lhs.GetHilbert(), mat, sites, constant);
+    auto opret = LocalOperator(lhs.GetHilbert().shared_from_this(), mat, sites,
+                               constant);
 
     if (std::abs(lhs.constant_) > mel_cutoff_) {
       opret += lhs.constant_ * rhs;
@@ -341,7 +346,7 @@ class LocalOperator : public AbstractOperator {
     sites.insert(sites.end(), rhs.sites_.begin(), rhs.sites_.end());
     mat.insert(mat.end(), rhs.mat_.begin(), rhs.mat_.end());
 
-    return LocalOperator(lhs.GetHilbert(), mat, sites,
+    return LocalOperator(lhs.GetHilbert().shared_from_this(), mat, sites,
                          lhs.constant_ + rhs.constant_);
   }
 
@@ -349,7 +354,7 @@ class LocalOperator : public AbstractOperator {
     auto sites = lhs.sites_;
     auto mat = lhs.mat_;
 
-    return LocalOperator(lhs.GetHilbert(), mat, sites,
+    return LocalOperator(lhs.GetHilbert().shared_from_this(), mat, sites,
                          lhs.constant_ + constant);
   }
 
@@ -384,7 +389,7 @@ class LocalOperator : public AbstractOperator {
       }
     }
 
-    return LocalOperator(rhs.GetHilbert(), mat, sites,
+    return LocalOperator(rhs.GetHilbert().shared_from_this(), mat, sites,
                          std::real(lhs * rhs.constant_));
   }
 

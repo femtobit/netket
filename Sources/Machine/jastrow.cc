@@ -21,8 +21,9 @@
 
 namespace netket {
 
-Jastrow::Jastrow(const AbstractHilbert &hilbert) : nv_(hilbert.Size()) {
-  SetHilbert(hilbert);
+Jastrow::Jastrow(std::shared_ptr<const AbstractHilbert> hilbert)
+    : nv_(hilbert->Size()) {
+  SetHilbert(std::move(hilbert));
   Init();
 }
 

@@ -22,9 +22,9 @@
 
 namespace netket {
 
-JastrowSymm::JastrowSymm(const AbstractHilbert &hilbert)
-    : graph_(hilbert.GetGraph()), nv_(hilbert.Size()) {
-  SetHilbert(hilbert);
+JastrowSymm::JastrowSymm(std::shared_ptr<const AbstractHilbert> hilbert)
+    : graph_(hilbert->GetGraph()), nv_(hilbert->Size()) {
+  SetHilbert(std::move(hilbert));
   Init(graph_);
 
   SetBareParameters();

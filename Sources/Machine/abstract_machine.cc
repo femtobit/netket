@@ -40,10 +40,4 @@ void AbstractMachine::Save(std::ofstream &stream) const {
   stream << j << std::endl;
 }
 
-const AbstractHilbert &AbstractMachine::GetHilbert() const { return *hilbert_; }
-
-void AbstractMachine::SetHilbert(const AbstractHilbert &hilbert) {
-  hilbert_ = hilbert.Clone();
-}
-
 }  // namespace netket

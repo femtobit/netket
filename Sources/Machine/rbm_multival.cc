@@ -25,11 +25,11 @@
 
 namespace netket {
 
-RbmMultival::RbmMultival(const AbstractHilbert &hilbert, int nhidden, int alpha,
+RbmMultival::RbmMultival(std::shared_ptr<const AbstractHilbert> hilbert, int nhidden, int alpha,
                          bool usea, bool useb)
-    : nv_(hilbert.Size()), ls_(hilbert.LocalSize()), usea_(usea), useb_(useb) {
+    : nv_(hilbert->Size()), ls_(hilbert->LocalSize()), usea_(usea), useb_(useb) {
   nh_ = std::max(nhidden, alpha * nv_);
-  SetHilbert(hilbert);
+  SetHilbert(std::move(hilbert));
   Init();
 }
 

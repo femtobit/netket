@@ -20,11 +20,11 @@
 
 namespace netket {
 
-RbmSpinReal::RbmSpinReal(const AbstractHilbert &hilbert, int nhidden, int alpha,
-                         bool usea, bool useb)
-    : nv_(hilbert.Size()), usea_(usea), useb_(useb) {
+RbmSpinReal::RbmSpinReal(std::shared_ptr<const AbstractHilbert> hilbert,
+                         int nhidden, int alpha, bool usea, bool useb)
+    : nv_(hilbert->Size()), usea_(usea), useb_(useb) {
   nh_ = std::max(nhidden, alpha * nv_);
-  SetHilbert(hilbert);
+  SetHilbert(std::move(hilbert));
   Init();
 }
 

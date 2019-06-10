@@ -118,7 +118,7 @@ class LocalOperator : public AbstractOperator {
   }
 
   void Init() {
-    if (!GetHilbert().IsDiscrete()) {
+    if (!hilbert_->IsDiscrete()) {
       throw InvalidInputError(
           "Cannot construct operators on infinite local hilbert spaces");
     }
@@ -145,12 +145,12 @@ class LocalOperator : public AbstractOperator {
       auto &invstate = invstate_[op];
 
       if (*std::max_element(sites.begin(), sites.end()) >=
-              GetHilbert().Size() ||
+              hilbert_->Size() ||
           *std::min_element(sites.begin(), sites.end()) < 0) {
         throw InvalidInputError("Operator acts on an invalid set of sites");
       }
 
-      auto localstates = GetHilbert().LocalStates();
+      auto localstates = hilbert_->LocalStates();
       const auto localsize = localstates.size();
 
       // Finding the non-zero matrix elements
@@ -205,7 +205,7 @@ class LocalOperator : public AbstractOperator {
   void FindConn(VectorConstRefType v, std::vector<Complex> &mel,
                 std::vector<std::vector<int>> &connectors,
                 std::vector<std::vector<double>> &newconfs) const override {
-    assert(v.size() == GetHilbert().Size());
+    assert(v.size() == hilbert_->Size());
 
     connectors.clear();
     newconfs.clear();
@@ -277,7 +277,7 @@ class LocalOperator : public AbstractOperator {
     std::transform(mat_.begin(), mat_.end(), mat_t.begin(),
                    netket::transpose_vecvec<MelType>);
 
-    return LocalOperator(GetHilbert().shared_from_this(), mat_t, sites_,
+    return LocalOperator(GetHilbert(), mat_t, sites_,
                          constant_);
   }
 
@@ -293,7 +293,7 @@ class LocalOperator : public AbstractOperator {
                      }
                      return out;
                    });
-    return LocalOperator(GetHilbert().shared_from_this(), mat_c, sites_,
+    return LocalOperator(GetHilbert(), mat_c, sites_,
                          constant_);
   }
 
@@ -322,7 +322,7 @@ class LocalOperator : public AbstractOperator {
       }
     }
     auto constant = lhs.constant_ * rhs.constant_;
-    auto opret = LocalOperator(lhs.GetHilbert().shared_from_this(), mat, sites,
+    auto opret = LocalOperator(lhs.GetHilbert(), mat, sites,
                                constant);
 
     if (std::abs(lhs.constant_) > mel_cutoff_) {
@@ -337,8 +337,8 @@ class LocalOperator : public AbstractOperator {
 
   friend LocalOperator operator+(const LocalOperator &lhs,
                                  const LocalOperator &rhs) {
-    assert(rhs.GetHilbert().LocalStates().size() ==
-           lhs.GetHilbert().LocalStates().size());
+    assert(rhs.hilbert_->LocalStates().size() ==
+           lhs.hilbert_->LocalStates().size());
 
     auto sites = lhs.sites_;
     auto mat = lhs.mat_;
@@ -346,7 +346,7 @@ class LocalOperator : public AbstractOperator {
     sites.insert(sites.end(), rhs.sites_.begin(), rhs.sites_.end());
     mat.insert(mat.end(), rhs.mat_.begin(), rhs.mat_.end());
 
-    return LocalOperator(lhs.GetHilbert().shared_from_this(), mat, sites,
+    return LocalOperator(lhs.GetHilbert(), mat, sites,
                          lhs.constant_ + rhs.constant_);
   }
 
@@ -354,13 +354,13 @@ class LocalOperator : public AbstractOperator {
     auto sites = lhs.sites_;
     auto mat = lhs.mat_;
 
-    return LocalOperator(lhs.GetHilbert().shared_from_this(), mat, sites,
+    return LocalOperator(lhs.GetHilbert(), mat, sites,
                          lhs.constant_ + constant);
   }
 
   LocalOperator &operator+=(const LocalOperator &rhs) {
-    assert(rhs.GetHilbert().LocalStates().size() ==
-           this->GetHilbert().LocalStates().size());
+    assert(rhs.hilbert_->LocalStates().size() ==
+           this->hilbert_->LocalStates().size());
 
     this->sites_.insert(this->sites_.end(), rhs.sites_.begin(),
                         rhs.sites_.end());
@@ -389,7 +389,7 @@ class LocalOperator : public AbstractOperator {
       }
     }
 
-    return LocalOperator(rhs.GetHilbert().shared_from_this(), mat, sites,
+    return LocalOperator(rhs.GetHilbert(), mat, sites,
                          std::real(lhs * rhs.constant_));
   }
 

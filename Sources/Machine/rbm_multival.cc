@@ -57,7 +57,7 @@ void RbmMultival::Init() {
     b_.setZero();
   }
 
-  auto localstates = GetHilbert().LocalStates();
+  auto localstates = hilbert_->LocalStates();
 
   localconfs_.resize(nv_ * ls_);
   for (int i = 0; i < nv_ * ls_; i += ls_) {
@@ -336,7 +336,7 @@ void RbmMultival::from_json(const json &pars) {
     nv_ = pars["Nvisible"];
   }
 
-  if (nv_ != GetHilbert().Size()) {
+  if (nv_ != hilbert_->Size()) {
     throw InvalidInputError(
         "Loaded wave-function has incompatible Hilbert space");
   }
@@ -344,7 +344,7 @@ void RbmMultival::from_json(const json &pars) {
   if (FieldExists(pars, "LocalSize")) {
     ls_ = pars["LocalSize"];
   }
-  if (ls_ != GetHilbert().LocalSize()) {
+  if (ls_ != hilbert_->LocalSize()) {
     throw InvalidInputError(
         "Loaded wave-function has incompatible Hilbert space");
   }

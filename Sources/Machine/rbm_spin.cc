@@ -241,7 +241,7 @@ void RbmSpin::from_json(const json &pars) {
   if (FieldExists(pars, "Nvisible")) {
     nv_ = FieldVal<int>(pars, "Nvisible");
   }
-  if (nv_ != GetHilbert().Size()) {
+  if (nv_ != hilbert_->Size()) {
     throw InvalidInputError(
         "Number of visible units is incompatible with given "
         "Hilbert space");

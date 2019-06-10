@@ -32,7 +32,7 @@ namespace netket {
   This class prototypes the methods needed
   by a class satisfying the Hilbert concept.
 */
-class AbstractHilbert : public std::enable_shared_from_this<AbstractHilbert> {
+class AbstractHilbert {
  public:
   /**
   Member function returning true if the hilbert space has discrete quantum

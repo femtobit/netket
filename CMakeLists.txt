@@ -87,6 +87,20 @@ ExternalProject_Get_Property(eigen_project SOURCE_DIR)
 add_library(Eigen3 INTERFACE)
 target_include_directories(Eigen3 SYSTEM INTERFACE ${SOURCE_DIR})
 
+# pcg_random
+################################################################################
+if (NOT EXISTS "${CMAKE_BINARY_DIR}/External/pcg-cpp/pcg_random.hpp")
+    file(DOWNLOAD
+        "https://raw.githubusercontent.com/imneme/pcg-cpp/v0.98.1/include/pcg_random.hpp"
+        "External/pcg-cpp/pcg_random.hpp")
+    file(DOWNLOAD
+        "https://raw.githubusercontent.com/imneme/pcg-cpp/v0.98.1/include/pcg_extras.hpp"
+        "External/pcg-cpp/pcg_extras.hpp")
+endif()
+add_library(pcg-cpp INTERFACE)
+target_include_directories(pcg-cpp
+    INTERFACE "${CMAKE_BINARY_DIR}/External/pcg-cpp/")
+
 
 # pybind11
 ###############################################################################
@@ -160,6 +174,7 @@ target_link_libraries(netket_lib
         Eigen3
         nlohmann_json
         optional_lite
+        pcg-cpp
         span_lite
         ${CMAKE_DL_LIBS}
 )

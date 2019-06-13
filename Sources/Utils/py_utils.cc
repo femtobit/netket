@@ -25,10 +25,7 @@ void AddUtilsModule(py::module m) {
 
   py::class_<netket::default_random_engine>(subm, "RandomEngine")
       .def(py::init<netket::default_random_engine::result_type>(),
-           py::arg("seed") = netket::default_random_engine::default_seed)
-      .def("seed", static_cast<void (netket::default_random_engine::*)(
-                       netket::default_random_engine::result_type)>(
-                       &netket::default_random_engine::seed));
+           py::arg("seed"));
 
   py::class_<Lookup<double>>(m, "LookupReal").def(py::init<>());
 

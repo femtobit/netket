@@ -18,14 +18,15 @@
 #include <complex>
 #include <random>
 
-#include <mpi.h>
 #include <Eigen/Dense>
+#include <mpi.h>
+#include <pcg_random.hpp>
 
 #include "Utils/mpi_interface.hpp"
 #include "common_types.hpp"
 
 namespace netket {
-using default_random_engine = std::mt19937;
+using default_random_engine = pcg64;
 
 inline void RandomGaussian(Eigen::Matrix<double, Eigen::Dynamic, 1> &par,
                            int seed, double sigma) {
@@ -84,8 +85,9 @@ class DistributedRandomEngine {
    * non-deterministic base seed (which is obtained from std::random_device).
    */
   ResultType GetDerivedSeed() {
-    std::random_device rd;
-    return GetDerivedSeed(rd());
+    pcg_extras::seed_seq_from<std::random_device> source;
+    default_random_engine rng(source);
+    return GetDerivedSeed(rng);
   }
 
   /**
@@ -94,6 +96,14 @@ class DistributedRandomEngine {
    *    of the RNGs for all MPI processes.
    */
   ResultType GetDerivedSeed(ResultType base_seed) {
+    default_random_engine rng(base_seed);
+    return GetDerivedSeed(rng);
+  }
+
+  /**
+   * Generate seeds for all MPI processes pseudo-randomly using the given rng.
+   */
+  ResultType GetDerivedSeed(default_random_engine &seed_engine) {
     int rank_s;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank_s);
     int size_s;
@@ -104,7 +114,6 @@ class DistributedRandomEngine {
     std::vector<ResultType> seeds;
     seeds.resize(size);
 
-    default_random_engine seed_engine(base_seed);
     std::uniform_int_distribution<ResultType> dist;
 
     if (rank == 0) {

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import flax.linen as nn
+import jax
 import jax.numpy as jnp
 
 import netket as nk
@@ -24,14 +25,21 @@ class Jastrow(nn.Module):
     """
     Jastrow wave function :math:`\Psi(s) = \exp(\sum_{ij} s_i W_{ij} s_j)`.
 
-    The W matrix is stored as a non-symmetric matrix, and symmetrized
-    during computation by doing :code:`W = W + W.T` in the computation.
+    Note that :math:`W` is a symmetric matrix in this ansatz.
+    The module parameter :code:`kernel_triu` contains its :math:`N(N+1)/2` independent
+    entries on the upper triangular part.
     """
 
+    input_size: int
+    """Size of the input configurations."""
     dtype: DType = jnp.complex128
     """The dtype of the weights."""
     kernel_init: NNInitFunc = normal()
     """Initializer for the weights."""
+
+    def setup(self):
+        self.n_par = self.input_size * (self.input_size + 1) // 2
+        self.triu_indices = jnp.triu_indices(self.input_size)
 
     @nn.compact
     def __call__(self, x_in: Array):
@@ -40,8 +48,16 @@ class Jastrow(nn.Module):
         dtype = jnp.promote_types(x_in.dtype, self.dtype)
         x_in = jnp.asarray(x_in, dtype=dtype)
 
-        kernel = self.param("kernel", self.kernel_init, (nv, nv), self.dtype)
-        kernel = kernel + kernel.T
+        params = self.param("kernel_triu", self.kernel_init, (self.n_par,), self.dtype)
+
+        kernel = jnp.empty((nv, nv), dtype=self.dtype)
+        kernel = jax.ops.index_update(
+            kernel,
+            self.triu_indices,
+            params,
+        )
+        kernel = kernel + jnp.tril(kernel.T, 1)
+
         y = jnp.einsum("...i,ij,...j", x_in, kernel, x_in)
 
         return y

@@ -493,6 +493,24 @@ class MCState(VariationalState):
 
         return Ō, Ō_grad
 
+    def _expect_fn(self, local_fn):
+        log_pdf = (
+            lambda w, s: self.sampler.machine_pow
+            * self._apply_fun({"params": w, **self.model_state}, s).real
+        )
+
+        def expect_closure(*args):
+            local_kernel_vmap = jax.vmap(partial(local_fn, self._apply_fun), in_axes=(None, 0), out_axes=0)
+            return nkjax.expect(
+                log_pdf, local_kernel_vmap, *args, n_chains=self.samples.shape[0]
+            )
+
+        loss_and_grad = jax.value_and_grad(
+            lambda w: expect_closure(w, self.samples), has_aux=True
+        )(self.parameters)
+        loss, grad = loss_and_grad
+        return loss[1], grad
+
     def quantum_geometric_tensor(self, sr: SR):
         r"""Computes an estimate of the quantum geometric tensor G_ij.
         This function returns a linear operator that can be used to apply G_ij to a given vector

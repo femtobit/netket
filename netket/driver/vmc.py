@@ -18,8 +18,8 @@ import jax
 import jax.numpy as jnp
 from jax.tree_util import tree_map
 
+from netket.operator import AbstractOperator
 from netket.stats import Stats
-
 from netket.variational import MCState
 
 from .vmc_common import info
@@ -69,17 +69,21 @@ class VMC(AbstractVariationalDriver):
         if variational_state is None:
             variational_state = MCState(*args, **kwargs)
 
-        if variational_state.hilbert != hamiltonian.hilbert:
+        if isinstance(hamiltonian, AbstractOperator):
+            self._ham = hamiltonian.collect()  # type: AbstractOperator
+            hilbert = hamiltonian.hilbert
+        else:
+            self._ham, hilbert = hamiltonian
+
+        if variational_state.hilbert != hilbert:
             raise TypeError(
-                f"""the variational_state has hilbert space {variational_state.hilbert} 
+                f"""the variational_state has hilbert space {variational_state.hilbert}
                                 (this is normally defined by the hilbert space in the sampler), but
-                                the hamiltonian has hilbert space {hamiltonian.hilbert}. 
+                                the hamiltonian has hilbert space {hilbert}.
                                 The two should match."""
             )
 
         super().__init__(variational_state, optimizer, minimized_quantity_name="Energy")
-
-        self._ham = hamiltonian.collect()  # type: AbstractOperator
 
         self.sr = sr  # type: SR
         self.sr_restart = sr_restart
@@ -99,7 +103,10 @@ class VMC(AbstractVariationalDriver):
         self.state.reset()
 
         # Compute the local energy estimator and average Energy
-        self._loss_stats, self._loss_grad = self.state.expect_and_grad(self._ham)
+        if isinstance(self._ham, AbstractOperator):
+            self._loss_stats, self._loss_grad = self.state.expect_and_grad(self._ham)
+        else:
+            self._loss_stats, self._loss_grad = self.state._expect_fn(self._ham)
 
         if self.sr is not None:
             self._S = self.state.quantum_geometric_tensor(self.sr)
